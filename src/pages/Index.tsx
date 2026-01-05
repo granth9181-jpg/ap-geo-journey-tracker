@@ -32,7 +32,7 @@ const Index = () => {
               <GraduationCap className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">AP Tracker</h1>
+              <h1 className="text-2xl font-bold text-foreground">APTRAK</h1>
               <p className="text-sm text-muted-foreground">Select a course to begin</p>
             </div>
           </div>
