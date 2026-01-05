@@ -1,56 +1,100 @@
-import { ProgressHeader } from '@/components/ProgressHeader';
-import { UnitAccordion } from '@/components/UnitAccordion';
-import { useTaskStorage } from '@/hooks/useTaskStorage';
-import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { Link } from 'react-router-dom';
+import { 
+  Globe, 
+  Landmark, 
+  BookOpen, 
+  Earth, 
+  Castle, 
+  Brain,
+  ChevronRight,
+  GraduationCap
+} from 'lucide-react';
+import { courses, getCourseProgress } from '@/hooks/useCourseStorage';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+
+const iconMap: Record<string, React.ElementType> = {
+  Globe,
+  Landmark,
+  BookOpen,
+  Earth,
+  Castle,
+  Brain,
+};
 
 const Index = () => {
-  const { units, toggleTask, resetAllTasks, getProgress } = useTaskStorage();
-  const { totalTasks, completedTasks, percentage } = getProgress();
-
   return (
     <div className="min-h-screen bg-background">
-      <ProgressHeader
-        completedTasks={completedTasks}
-        totalTasks={totalTasks}
-        percentage={percentage}
-      />
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border safe-top">
+        <div className="px-5 py-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">AP Tracker</h1>
+              <p className="text-sm text-muted-foreground">Select a course to begin</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
       <main className="px-4 py-6 pb-24 safe-bottom">
-        <UnitAccordion units={units} onToggleTask={toggleTask} />
+        <div className="space-y-3">
+          {courses.map(course => {
+            const IconComponent = iconMap[course.icon] || Globe;
+            const progress = getCourseProgress(course.id);
+            const isAvailable = course.units.length > 0;
 
-        <div className="mt-8 flex justify-center">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <RotateCcw className="w-4 h-4" />
-                Reset All Progress
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset all progress?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will uncheck all tasks and reset your progress to 0%. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={resetAllTasks}>Reset</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            return (
+              <Link
+                key={course.id}
+                to={isAvailable ? `/course/${course.id}` : '#'}
+                className={cn(
+                  "block bg-card border border-border rounded-xl p-4 transition-all duration-200",
+                  isAvailable 
+                    ? "hover:shadow-md hover:border-primary/30 active:scale-[0.98]" 
+                    : "opacity-60 cursor-not-allowed"
+                )}
+                onClick={(e) => !isAvailable && e.preventDefault()}
+              >
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `hsl(${course.color} / 0.15)` }}
+                  >
+                    <IconComponent 
+                      className="w-6 h-6" 
+                      style={{ color: `hsl(${course.color})` }}
+                    />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <h2 className="font-semibold text-foreground truncate">
+                        {course.name}
+                      </h2>
+                      {isAvailable && (
+                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </div>
+                    
+                    {isAvailable ? (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="font-medium text-foreground">{progress}%</span>
+                        </div>
+                        <Progress value={progress} className="h-1.5" />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-1">Coming soon</p>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </main>
     </div>

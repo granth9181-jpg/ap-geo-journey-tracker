@@ -13,7 +13,16 @@ export interface Unit {
   tasks: Task[];
 }
 
-const defaultUnits: Unit[] = [
+export interface Course {
+  id: string;
+  name: string;
+  shortName: string;
+  icon: string;
+  color: string;
+  units: Unit[];
+}
+
+const apHumanGeographyUnits: Unit[] = [
   {
     id: 'unit-1',
     name: 'Unit 1: Thinking Geographically (8-10%)',
@@ -119,18 +128,71 @@ const defaultUnits: Unit[] = [
   },
 ];
 
-export const useTaskStorage = () => {
+export const courses: Course[] = [
+  {
+    id: 'ap-human-geography',
+    name: 'AP Human Geography',
+    shortName: 'AP HuG',
+    icon: 'Globe',
+    color: '142 50% 45%',
+    units: apHumanGeographyUnits,
+  },
+  {
+    id: 'ap-us-government',
+    name: 'AP US Government & Politics',
+    shortName: 'AP Gov',
+    icon: 'Landmark',
+    color: '220 70% 50%',
+    units: [],
+  },
+  {
+    id: 'ap-us-history',
+    name: 'AP US History',
+    shortName: 'AP USH',
+    icon: 'BookOpen',
+    color: '25 80% 50%',
+    units: [],
+  },
+  {
+    id: 'ap-world-history',
+    name: 'AP World History: Modern',
+    shortName: 'AP World',
+    icon: 'Earth',
+    color: '280 60% 50%',
+    units: [],
+  },
+  {
+    id: 'ap-european-history',
+    name: 'AP European History',
+    shortName: 'AP Euro',
+    icon: 'Castle',
+    color: '350 65% 50%',
+    units: [],
+  },
+  {
+    id: 'ap-psychology',
+    name: 'AP Psychology',
+    shortName: 'AP Psych',
+    icon: 'Brain',
+    color: '190 70% 45%',
+    units: [],
+  },
+].sort((a, b) => a.name.localeCompare(b.name));
+
+export const useCourseStorage = (courseId: string) => {
+  const course = courses.find(c => c.id === courseId);
+  
   const [units, setUnits] = useState<Unit[]>(() => {
-    const saved = localStorage.getItem('ap-hug-tasks');
+    const saved = localStorage.getItem(`ap-tasks-${courseId}`);
     if (saved) {
       return JSON.parse(saved);
     }
-    return defaultUnits;
+    return course?.units || [];
   });
 
   useEffect(() => {
-    localStorage.setItem('ap-hug-tasks', JSON.stringify(units));
-  }, [units]);
+    localStorage.setItem(`ap-tasks-${courseId}`, JSON.stringify(units));
+  }, [units, courseId]);
 
   const toggleTask = (taskId: string) => {
     setUnits(prevUnits =>
@@ -144,7 +206,7 @@ export const useTaskStorage = () => {
   };
 
   const resetAllTasks = () => {
-    setUnits(defaultUnits);
+    setUnits(course?.units || []);
   };
 
   const getProgress = () => {
@@ -153,8 +215,25 @@ export const useTaskStorage = () => {
       (acc, unit) => acc + unit.tasks.filter(task => task.completed).length,
       0
     );
-    return { totalTasks, completedTasks, percentage: Math.round((completedTasks / totalTasks) * 100) };
+    return { 
+      totalTasks, 
+      completedTasks, 
+      percentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0 
+    };
   };
 
-  return { units, toggleTask, resetAllTasks, getProgress };
+  return { course, units, toggleTask, resetAllTasks, getProgress };
+};
+
+export const getCourseProgress = (courseId: string): number => {
+  const saved = localStorage.getItem(`ap-tasks-${courseId}`);
+  if (!saved) return 0;
+  
+  const units: Unit[] = JSON.parse(saved);
+  const totalTasks = units.reduce((acc, unit) => acc + unit.tasks.length, 0);
+  const completedTasks = units.reduce(
+    (acc, unit) => acc + unit.tasks.filter(task => task.completed).length,
+    0
+  );
+  return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 };

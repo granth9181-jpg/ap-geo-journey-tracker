@@ -6,7 +6,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { TaskItem } from './TaskItem';
-import type { Unit } from '@/hooks/useTaskStorage';
+import type { Unit } from '@/hooks/useCourseStorage';
 
 interface UnitAccordionProps {
   units: Unit[];
