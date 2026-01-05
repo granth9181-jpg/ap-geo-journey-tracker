@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Task } from '@/hooks/useTaskStorage';
+import type { Task } from '@/hooks/useCourseStorage';
 
 interface TaskItemProps {
   task: Task;
